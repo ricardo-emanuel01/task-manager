@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "task-manager"
+version = "0.1.0"
+description = ""
+authors = ["Ricardo Emanuel <r200518@dac.unicamp.br>"]
+readme = "README.md"
+packages = [{include = "task_manager"}]
+
+[tool.poetry.dependencies]
+python = "3.11.*"
+fastapi = "^0.104.0"
+uvicorn = "^0.23.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.2"
+pytest-cov = "^4.1.0"
+taskipy = "^1.12.0"
+blue = "^0.9.1"
+ruff = "^0.1.1"
+httpx = "^0.25.0"
+isort = "^5.12.0"
+
+
+[tool.ruff]
+line-length = 79
+exclude = ['.venv', 'migrations']
+
+
+[tool.isort]
+profile = "black"
+line-length = 79
+extend_skip = ['migrations']
+
+
+[tool.pytest.ini_options]
+pythonpath = "."
+
+
+[tool.blue]
+extend-exclude = '(migrations/)'
+
+
+[tool.taskipy.tasks]
+lint = 'ruff . && blue --check . --diff'
+format = 'blue . && isort .'
+run = 'uvicorn task_manager.app:app --reload'
+pre_test = 'task lint'
+test = 'pytest -s -x --cov=task_manager -vv'
+post_test = 'coverage html'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
