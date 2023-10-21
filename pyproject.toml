@@ -33,7 +33,7 @@ exclude = ['.venv', 'migrations']
 
 [tool.isort]
 profile = "black"
-line-length = 79
+line_length = 79
 extend_skip = ['migrations']
 
 
