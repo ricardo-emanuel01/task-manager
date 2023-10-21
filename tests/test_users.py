@@ -1,0 +1,104 @@
+from fastapi import status
+
+from task_manager.schemas import UserPublic
+
+
+def test_create_new_user(client):
+    response = client.post(
+        '/users/',
+        json={
+            'username': 'mariana',
+            'email': 'mariana@example.com',
+            'password': 'salgadinhodeuva',
+        },
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == {
+        'username': 'mariana',
+        'email': 'mariana@example.com',
+        'id': 1,
+    }
+
+
+def test_create_user_with_existent_username(client, user):
+    response = client.post(
+        '/users/',
+        json={
+            'username': 'Teste',
+            'password': 'fizzbyzz',
+            'email': 'teste@test.com',
+        },
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {'detail': 'Username already registered'}
+
+
+def test_read_users(client):
+    response = client.get('/users/')
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'users': []}
+
+
+def test_read_users_with_users(client, user):
+    user_schema = UserPublic.model_validate(user).model_dump()
+
+    response = client.get('/users/')
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'users': [user_schema]}
+
+
+def test_update_user(client, user, token):
+    response = client.put(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'jasdasd',
+        },
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        'username': 'bob',
+        'email': 'bob@example.com',
+        'id': 1,
+    }
+
+
+def test_update_another_user(client, user, token):
+    response = client.put(
+        '/users/2',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'jasdasd',
+        },
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'detail': 'User deleted'}
+
+
+def test_delete_another_user(client, user, token):
+    response = client.delete(
+        '/users/2',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {'detail': 'Not enough permissions'}
