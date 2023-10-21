@@ -58,9 +58,10 @@ def test_read_users_with_users(client, user):
     assert response.json() == {'users': [user_schema]}
 
 
-def test_update_user(client, user):
+def test_update_user(client, user, token):
     response = client.put(
-        '/users/1',
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'bob',
             'email': 'bob@example.com',
@@ -76,71 +77,54 @@ def test_update_user(client, user):
     }
 
 
-def test_update_user_error_from_id_less_than_1(client, user):
-    response = client.put(
-        '/users/0',
-        json={
-            'username': 'bob',
-            'email': 'bob@example.com',
-            'password': 'jasdasd',
-        },
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
     )
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
-
-
-def test_update_user_error_from_id_greater_than_size_without_users(client):
-    response = client.put(
-        '/users/1',
-        json={
-            'username': 'bob',
-            'email': 'bob@example.com',
-            'password': 'jasdasd',
-        },
-    )
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
-
-
-def test_update_user_error_from_id_greater_than_size_with_users(client, user):
-    response = client.put(
-        '/users/2',
-        json={
-            'username': 'bob',
-            'email': 'bob@example.com',
-            'password': 'jasdasd',
-        },
-    )
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
-
-
-def test_delete_user(client, user):
-    response = client.delete('/users/1')
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'detail': 'User deleted'}
 
 
-def test_delete_user_error_from_id_less_than_1(client):
-    response = client.delete('/users/0')
+def test_get_token(client, user):
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.plain_password},
+    )
 
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    token = response.json()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert 'access_token' in token
+    assert 'token_type' in token
 
 
-def test_delete_user_error_from_id_greater_than_size_without_users(client):
-    response = client.delete('/users/1')
+def test_get_token_wrong_email_without_user(client):
+    wrong_email = 'wrong@wrong.com'
+    response = client.post(
+        '/token',
+        data={'username': wrong_email, 'password': 'asdjkasjd'},
+    )
 
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {'detail': 'Incorrect email or password'}
 
 
-def test_delete_user_error_from_id_greater_than_size_with_users(client, user):
-    response = client.delete('/users/2')
+def test_get_token_wrong_email_with_user(client, user):
+    wrong_email = 'wrong@wrong.com'
+    response = client.post(
+        '/token',
+        data={'username': wrong_email, 'password': user.plain_password},
+    )
 
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {'detail': 'Incorrect email or password'}
+
+
+def test_get_token_wrong_password(client, user):
+    response = client.post(
+        '/token', data={'username': user.email, 'password': 'wrongPass'}
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {'detail': 'Incorrect email or password'}
