@@ -77,6 +77,21 @@ def test_update_user(client, user, token):
     }
 
 
+def test_update_another_user(client, user, token):
+    response = client.put(
+        '/users/2',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'jasdasd',
+        },
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
 def test_delete_user(client, user, token):
     response = client.delete(
         f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
@@ -84,6 +99,16 @@ def test_delete_user(client, user, token):
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {'detail': 'User deleted'}
+
+
+def test_delete_another_user(client, user, token):
+    response = client.delete(
+        '/users/2',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
 def test_get_token(client, user):
