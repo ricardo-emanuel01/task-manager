@@ -21,18 +21,18 @@ def test_create_new_user(client):
     }
 
 
-def test_create_user_with_existent_username(client, user):
+def test_create_user_with_existent_email(client, user):
     response = client.post(
         '/users/',
         json={
-            'username': user.username,
+            'username': 'username',
             'password': 'fizzbyzz',
-            'email': 'teste@test.com',
+            'email': user.email,
         },
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {'detail': 'Username already registered'}
+    assert response.json() == {'detail': 'Email already registered'}
 
 
 def test_read_users(client):

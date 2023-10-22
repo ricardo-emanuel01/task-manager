@@ -20,14 +20,12 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
     '/', response_model=UserPublic, status_code=status.HTTP_201_CREATED
 )
 def create_user(user: UserSchema, session: Session):
-    db_user = session.scalar(
-        select(User).where(User.username == user.username)
-    )
+    db_user = session.scalar(select(User).where(User.email == user.email))
 
     if db_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Username already registered',
+            detail='Email already registered',
         )
 
     hashed_password = get_password_hash(user.password)
