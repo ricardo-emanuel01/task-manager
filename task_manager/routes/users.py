@@ -63,7 +63,7 @@ def update_user(
         )
 
     current_user.username = user.username
-    current_user.password = user.password
+    current_user.password = get_password_hash(user.password)
     current_user.email = user.email
 
     session.commit()

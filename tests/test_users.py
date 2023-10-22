@@ -25,7 +25,7 @@ def test_create_user_with_existent_username(client, user):
     response = client.post(
         '/users/',
         json={
-            'username': 'Teste',
+            'username': user.username,
             'password': 'fizzbyzz',
             'email': 'teste@test.com',
         },
@@ -66,13 +66,13 @@ def test_update_user(client, user, token):
     assert response.json() == {
         'username': 'bob',
         'email': 'bob@example.com',
-        'id': 1,
+        'id': user.id,
     }
 
 
-def test_update_another_user(client, user, token):
+def test_update_another_user(client, another_user, token):
     response = client.put(
-        '/users/2',
+        f'/users/{another_user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'bob',
@@ -94,9 +94,9 @@ def test_delete_user(client, user, token):
     assert response.json() == {'detail': 'User deleted'}
 
 
-def test_delete_another_user(client, user, token):
+def test_delete_another_user(client, another_user, token):
     response = client.delete(
-        '/users/2',
+        f'/users/{another_user.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
