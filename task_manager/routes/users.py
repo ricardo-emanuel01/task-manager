@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from task_manager.database import get_session
@@ -20,12 +20,16 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
     '/', response_model=UserPublic, status_code=status.HTTP_201_CREATED
 )
 def create_user(user: UserSchema, session: Session):
-    db_user = session.scalar(select(User).where(User.email == user.email))
+    db_user = session.scalar(
+        select(User).where(
+            or_(User.email == user.email, User.username == user.username)
+        )
+    )
 
     if db_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Email already registered',
+            detail='Email or username already registered',
         )
 
     hashed_password = get_password_hash(user.password)

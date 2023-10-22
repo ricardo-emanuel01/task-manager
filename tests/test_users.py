@@ -32,7 +32,25 @@ def test_create_user_with_existent_email(client, user):
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {'detail': 'Email already registered'}
+    assert response.json() == {
+        'detail': 'Email or username already registered'
+    }
+
+
+def test_create_user_with_existent_username(client, user):
+    response = client.post(
+        '/users/',
+        json={
+            'username': user.username,
+            'password': 'fizzbyzz',
+            'email': 'user@example.com',
+        },
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {
+        'detail': 'Email or username already registered'
+    }
 
 
 def test_read_users(client):
