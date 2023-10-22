@@ -70,7 +70,7 @@ def test_read_users_with_users(client, user):
 
 
 def test_update_user(client, user, token):
-    response = client.put(
+    response = client.patch(
         f'/users/{user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
@@ -89,7 +89,7 @@ def test_update_user(client, user, token):
 
 
 def test_update_another_user(client, another_user, token):
-    response = client.put(
+    response = client.patch(
         f'/users/{another_user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={

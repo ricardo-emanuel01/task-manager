@@ -33,6 +33,7 @@ def list_todos(
 ):
     query = select(Todo).where(Todo.user_id == user.id)
 
+    # Refinando a query de acordo com os "query parameters" passados no endpoint
     if title:
         # .contains verifica se a string fornecida está presente no campo title
         query = query.filter(Todo.title.contains(title))
@@ -56,6 +57,7 @@ def create_todo(
     user: CurrentUser,
     session: Session,
 ):
+    # Gera um model de Todo com os argumentos
     db_todo: Todo = Todo(
         title=todo.title,
         description=todo.description,
@@ -83,6 +85,7 @@ def patch_todo(
             status_code=status.HTTP_404_NOT_FOUND, detail='Task not found'
         )
 
+    # Para todos os campos nao nulos atribui no modelo do banco de dados
     for key, value in todo.model_dump(exclude_unset=True).items():
         setattr(db_todo, key, value)
 

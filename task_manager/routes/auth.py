@@ -17,6 +17,7 @@ from task_manager.security import (
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 
+# Utilizando Annotated para facilitar as anotações dos parametros das funcoes
 OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 Session = Annotated[Session, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
@@ -27,20 +28,24 @@ def login_for_access_token(
     form_data: OAuth2Form,
     session: Session,
 ):
+    # Tenta buscar um user com o email passado no forms
     user = session.scalar(select(User).where(User.email == form_data.username))
 
     if not user:
+        # HTTP 400 caso nao haja nenhum usuario seja retornado pela query acima
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Incorrect email or password',
         )
 
+    # Se houver algum usuario verifica se a senha corresponde a salva no banco de dados
     if not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Incorrect email or password',
         )
 
+    # Assim que passar na validacao de existencia e de senha gera um token
     access_token = create_access_token(data={'sub': user.email})
 
     return {'access_token': access_token, 'token_type': 'bearer'}

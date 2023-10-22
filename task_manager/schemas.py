@@ -9,11 +9,20 @@ class UserSchema(BaseModel):
     password: str
 
 
+# Utilizado para retornar o usuario com id e sem expor a senha
 class UserPublic(BaseModel):
     id: int
     username: str
     email: EmailStr
+
+    # Permite que o modelo do banco de dados possa ser processado como um objeto python
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserUpdate(BaseModel):
+    username: str | None = None
+    email: EmailStr | None = None
+    password: str | None = None
 
 
 class UserList(BaseModel):
@@ -30,6 +39,7 @@ class TodoSchema(BaseModel):
     state: TodoState
 
 
+# Utilizado para retornar a tarefa com o id
 class TodoPublic(BaseModel):
     id: int
     title: str

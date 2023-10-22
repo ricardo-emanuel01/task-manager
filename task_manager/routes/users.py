@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 
 from task_manager.database import get_session
 from task_manager.models import User
-from task_manager.schemas import Message, UserList, UserPublic, UserSchema
+from task_manager.schemas import (
+    Message,
+    UserList,
+    UserPublic,
+    UserSchema,
+    UserUpdate,
+)
 from task_manager.security import get_current_user, get_password_hash
 
 router = APIRouter(prefix='/users', tags=['users'])
@@ -51,10 +57,10 @@ def read_users(session: Session, skip: int = 0, limit: int = 100):
     return {'users': users}
 
 
-@router.put('/{user_id}', response_model=UserPublic)
+@router.patch('/{user_id}', response_model=UserPublic)
 def update_user(
     user_id: int,
-    user: UserSchema,
+    user: UserUpdate,
     session: Session,
     current_user: CurrentUser,
 ):
@@ -64,9 +70,8 @@ def update_user(
             detail='Not enough permissions',
         )
 
-    current_user.username = user.username
-    current_user.password = get_password_hash(user.password)
-    current_user.email = user.email
+    for key, value in user.model_dump(exclude_unset=True).items():
+        setattr(current_user, key, value)
 
     session.commit()
     session.refresh(current_user)
