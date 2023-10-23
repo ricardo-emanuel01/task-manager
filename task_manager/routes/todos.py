@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from task_manager.database import get_session
+from task_manager.database import get_session, patch_entity
 from task_manager.models import Todo, User
 from task_manager.schemas import (
     Message,
@@ -85,13 +85,7 @@ def patch_todo(
             status_code=status.HTTP_404_NOT_FOUND, detail='Task not found'
         )
 
-    # Para todos os campos nao nulos atribui no modelo do banco de dados
-    for key, value in todo.model_dump(exclude_unset=True).items():
-        setattr(db_todo, key, value)
-
-    session.add(db_todo)
-    session.commit()
-    session.refresh(db_todo)
+    patch_entity(db_todo, todo, session)
 
     return db_todo
 

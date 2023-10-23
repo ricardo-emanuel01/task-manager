@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from task_manager.database import get_session
+from task_manager.database import get_session, patch_entity
 from task_manager.models import User
 from task_manager.schemas import (
     Message,
@@ -70,11 +70,7 @@ def update_user(
             detail='Not enough permissions',
         )
 
-    for key, value in user.model_dump(exclude_unset=True).items():
-        setattr(current_user, key, value)
-
-    session.commit()
-    session.refresh(current_user)
+    patch_entity(current_user, user, session)
 
     return current_user
 
