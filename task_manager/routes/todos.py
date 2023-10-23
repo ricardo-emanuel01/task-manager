@@ -25,11 +25,11 @@ Session = Annotated[Session, Depends(get_session)]
 def list_todos(
     session: Session,
     user: CurrentUser,
-    title: str = Query(None),
-    description: str = Query(None),
-    state: str = Query(None),
-    offset: int = Query(None),
-    limit: int = Query(None),
+    title: Annotated[str | None, Query(max_length=50)] = None,
+    description: Annotated[str | None, Query(max_length=50)] = None,
+    state: Annotated[str | None, Query(max_length=50)] = None,
+    offset: Annotated[int | None, Query(ge=1)] = None,
+    limit: Annotated[int | None, Query(ge=1)] = None,
 ):
     query = select(Todo).where(Todo.user_id == user.id)
 

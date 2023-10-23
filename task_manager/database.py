@@ -12,6 +12,7 @@ engine = create_engine(Settings().DATABASE_URL)
 Entity = Union[Todo, User]
 NewEntity = Union[TodoUpdate, UserUpdate]
 
+
 def get_session():
     with Session(engine) as session:
         yield session
